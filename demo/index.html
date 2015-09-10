@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html ng-app="rsInfiniteScrollDemo">
+  <head>
+    <title>Infinte Scroll Example</title>
+    <style type="text/css" media="all">
+      .scroller {
+        height: 200px;
+        width: 600px;
+        overflow: auto;
+        background: #e1e1e1;
+      }
+    </style>
+  </head>
+  <body>
+    <div ng-controller="RsDemoController as ctrl">
+      <div class="scroller" rs-infinite-scroll proxy="ctrl.scrollProxy">
+        <div ng-repeat="dummy in ctrl.dummyList">
+          {{dummy}}
+        </div>
+      </div>
+    </div>
+    <script src="/__build__/shared.js"></script>
+    <script src="/__build__/demo.js"></script>
+  </body>
+</html>
