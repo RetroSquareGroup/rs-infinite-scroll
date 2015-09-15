@@ -60,6 +60,8 @@ rsInfiniteScroll.directive(DIRECTIVE_NAME, function($q, $timeout) {
       }
 
       function applyLoadFollowing() {
+        if (!scope.proxy.loadFollowing) return;
+
         let deferred = $q.defer();
         isLoading = 1;
         $timeout(() => {
@@ -72,6 +74,8 @@ rsInfiniteScroll.directive(DIRECTIVE_NAME, function($q, $timeout) {
       }
 
       function applyLoadPrevious() {
+        if (!scope.proxy.loadPrevious) return;
+
         let deferred = $q.defer();
         let beforeHeight = element.find('div').prop('offsetHeight');
         isLoading = 1;

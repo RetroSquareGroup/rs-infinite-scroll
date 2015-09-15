@@ -127,6 +127,8 @@ var RsInfiniteScroll =
 	      }
 
 	      function applyLoadFollowing() {
+	        if (!scope.proxy.loadFollowing) return;
+
 	        var deferred = $q.defer();
 	        isLoading = 1;
 	        $timeout(function () {
@@ -139,6 +141,8 @@ var RsInfiniteScroll =
 	      }
 
 	      function applyLoadPrevious() {
+	        if (!scope.proxy.loadPrevious) return;
+
 	        var deferred = $q.defer();
 	        var beforeHeight = element.find('div').prop('offsetHeight');
 	        isLoading = 1;
