@@ -8,7 +8,7 @@ const DIRECTIVE_NAME = MODULE_NAME;
 let rsInfiniteScroll = angular.module(MODULE_NAME, []);
 
 /*@ngInject*/
-rsInfiniteScroll.directive(DIRECTIVE_NAME, function($timeout) {
+rsInfiniteScroll.directive(DIRECTIVE_NAME, function($q, $timeout) {
   return {
     restrict: 'A',
     transclude: true,
@@ -17,34 +17,23 @@ rsInfiniteScroll.directive(DIRECTIVE_NAME, function($timeout) {
       proxy: '='
     },
     link: (scope, element) => {
-      // var nextDataUrl;
-      // var prevDataUrl;
-      // var nextDataCache;
-      // var prevDataCache;
       var lastScroll = 0;
       var isLoading = 0;
-      // var hideOnLoad = false;
 
-      function applyLoadFollowing() {
-        isLoading = 1;
-        $timeout(() => {
-          scope.proxy.loadFollowing();
-          isLoading = 0;
-        });
-      }
+      element.ready(initPaginator);
+
+      scope.$on('$destroy', () => {
+        element.off('scroll');
+      });
 
       function initPaginator() {
         const FORWARD  = 1;
         const BACKWARD = -1;
-        let containerHeight = element.prop('offsetHeight');
-        let contentHeight = element.find('div').prop('offsetHeight');
+        let {containerHeight, contentHeight} = getContainerProps();
 
         element.on('scroll', () => {
           // handle scroll events to update content
-          let container = element[0];
-          let containerHeight = element.prop('offsetHeight');
-          let contentHeight = element.find('div').prop('offsetHeight');
-          let scrollPos = container.scrollTop;
+          let {containerHeight, contentHeight, scrollPos} = getContainerProps();
           let direction = (scrollPos > lastScroll) ? FORWARD : BACKWARD;
 
           if (direction === FORWARD) {
@@ -54,36 +43,61 @@ rsInfiniteScroll.directive(DIRECTIVE_NAME, function($timeout) {
           }
           if (direction === BACKWARD) {
             if (scrollPos <= 0.1*containerHeight) {
-              if (isLoading == 0) scope.proxy.loadPrevious();
+              if (isLoading == 0) applyLoadPrevious();
             }
           }
 
           lastScroll = scrollPos;
         });
-        // $(document).ready(function () {
-          // if we have enough room, load the next batch
-          if (containerHeight > contentHeight) {
-          //  if (next_data_url!="") {
-              applyLoadFollowing();
-          /*  } else {
-              var filler = document.createElement("div");
-              filler.id = "filler";
-              filler.style.height = ($(window).height() -
-                                     $("#scrollingcontent").height())+ "px";
-              $("#scrollingcontent").after(filler);
-              hide_on_load = "filler";
-            }*/
-          }
-          // scroll down to hide empty room
-        // });
+
+        if (containerHeight > contentHeight) {
+          applyLoadFollowing().then(() => {
+            $timeout(() => {
+              setScrollPos(1);
+            });
+          });
+        }
       }
 
-      element.ready(initPaginator);
+      function applyLoadFollowing() {
+        let deferred = $q.defer();
+        isLoading = 1;
+        $timeout(() => {
+          scope.proxy.loadFollowing().then(() => {
+            isLoading = 0;
+            deferred.resolve();
+          });
+        });
+        return deferred.promise;
+      }
 
-      scope.$on('$destroy', () => {
-        // TODO unregister junt
-        element.off('scroll');
-      });
+      function applyLoadPrevious() {
+        let deferred = $q.defer();
+        let beforeHeight = element.find('div').prop('offsetHeight');
+        isLoading = 1;
+        $timeout(() => {
+          scope.proxy.loadPrevious().then(() => {
+            $timeout(() => {
+              let afterHeight = element.find('div').prop('offsetHeight');
+              setScrollPos(afterHeight-beforeHeight);
+              isLoading = 0;
+              deferred.resolve();
+            });
+          });
+        });
+        return deferred.promise;
+      }
+
+      function getContainerProps() {
+        let containerHeight = element.prop('offsetHeight');
+        let contentHeight = element.find('div').prop('offsetHeight');
+        let scrollPos = element[0].scrollTop;
+        return {containerHeight, contentHeight, scrollPos};
+      }
+
+      function setScrollPos(scrollPos=0) {
+        element[0].scrollTop = scrollPos;
+      }
     }
   };
 });
