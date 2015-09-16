@@ -6,7 +6,7 @@
   "scripts": {
     "build": "NODE_ENV=production webpack --progress --colors src/rs-infinite-scroll.js bin/rs-infinite-scroll.js",
     "build-min": "NODE_ENV=production COMPRESS=1 webpack --progress --colors src/rs-infinite-scroll.js bin/rs-infinite-scroll.min.js",
-    "demo": "webpack-dev-server --config demo/webpack.config.js --no-info --content-base demo",
+    "demo": "webpack-dev-server --host 0.0.0.0 --config demo/webpack.config.js --no-info --content-base demo",
     "test": "karma start"
   },
   "repository": {
