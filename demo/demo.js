@@ -12,7 +12,18 @@ angular.module('rsInfiniteScrollDemo', [require('rs-infinite-scroll')])
     ctrl.dummyList = [];
 
     let init = function() {
-      ctrl.dummyList = [1,2,3,4,5,6,7,8,9,10];
+      ctrl.dummyList = [
+        {index: 1},
+        {index: 2},
+        {index: 3},
+        {index: 4},
+        {index: 5},
+        {index: 6},
+        {index: 7},
+        {index: 8},
+        {index: 9},
+        {index: 10}
+      ];
     };
     init();
 
@@ -29,12 +40,12 @@ angular.module('rsInfiniteScrollDemo', [require('rs-infinite-scroll')])
     function addAfter(last) {
       var deferred = $q.defer();
       $timeout(() => {
-        if (last > 1000) {
+        if (last.index > 1000) {
           deferred.resolve();
           return;
         }
-        for (let i = last+1; i < last+10; i++) {
-          ctrl.dummyList.push(i);
+        for (let i = last.index+1; i < last.index+10; i++) {
+          ctrl.dummyList.push({index: i});
         }
         deferred.resolve();
       }, 200);
@@ -44,12 +55,12 @@ angular.module('rsInfiniteScrollDemo', [require('rs-infinite-scroll')])
     function addBefore(first) {
       var deferred = $q.defer();
       $timeout(() => {
-        if (first < -1000) {
+        if (first.index < -1000) {
           deferred.resolve();
           return;
         }
-        for (let i = first-1; i > first-10; i--) {
-          ctrl.dummyList.unshift(i);
+        for (let i = first.index-1; i > first.index-10; i--) {
+          ctrl.dummyList.unshift({index: i});
         }
         deferred.resolve();
       }, 200);

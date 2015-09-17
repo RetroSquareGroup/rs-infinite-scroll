@@ -60,12 +60,11 @@ var RsInfiniteScroll =
 	var _angular2 = _interopRequireDefault(_angular);
 
 	var MODULE_NAME = 'rsInfiniteScroll';
-	var DIRECTIVE_NAME = MODULE_NAME;
 
 	var rsInfiniteScroll = _angular2['default'].module(MODULE_NAME, []);
 
 	/*@ngInject*/
-	rsInfiniteScroll.directive(DIRECTIVE_NAME, function ($q, $timeout) {
+	rsInfiniteScroll.directive('rsInfiniteScroll', ["$q", "$timeout", function ($q, $timeout) {
 	  return {
 	    restrict: 'A',
 	    transclude: true,
@@ -73,14 +72,16 @@ var RsInfiniteScroll =
 	    scope: {
 	      proxy: '='
 	    },
-	    link: function link(scope, element) {
+	    controller: ["$scope", "$element", function controller($scope, $element) {
 	      var lastScroll = 0;
 	      var isLoading = 0;
+	      var children = [];
+	      var scrollTimeout;
 
-	      element.ready(initPaginator);
+	      $element.ready(initPaginator);
 
-	      scope.$on('$destroy', function () {
-	        element.off('scroll');
+	      $scope.$on('$destroy', function () {
+	        $element.off('scroll');
 	      });
 
 	      function initPaginator() {
@@ -92,7 +93,9 @@ var RsInfiniteScroll =
 	        var containerHeight = _getContainerProps.containerHeight;
 	        var contentHeight = _getContainerProps.contentHeight;
 
-	        element.on('scroll', function () {
+	        $element.on('scroll', function () {
+	          $timeout.cancel(scrollTimeout);
+
 	          // handle scroll events to update content
 
 	          var _getContainerProps2 = getContainerProps();
@@ -115,6 +118,8 @@ var RsInfiniteScroll =
 	          }
 
 	          lastScroll = scrollPos;
+
+	          scrollTimeout = $timeout(updateChildren, 300);
 	        });
 
 	        if (containerHeight > contentHeight) {
@@ -127,12 +132,12 @@ var RsInfiniteScroll =
 	      }
 
 	      function applyLoadFollowing() {
-	        if (!scope.proxy.loadFollowing) return;
+	        if (!$scope.proxy.loadFollowing) return;
 
 	        var deferred = $q.defer();
 	        isLoading = 1;
 	        $timeout(function () {
-	          scope.proxy.loadFollowing().then(function () {
+	          $scope.proxy.loadFollowing().then(function () {
 	            isLoading = 0;
 	            deferred.resolve();
 	          });
@@ -141,15 +146,15 @@ var RsInfiniteScroll =
 	      }
 
 	      function applyLoadPrevious() {
-	        if (!scope.proxy.loadPrevious) return;
+	        if (!$scope.proxy.loadPrevious) return;
 
 	        var deferred = $q.defer();
-	        var beforeHeight = element.find('div').prop('offsetHeight');
+	        var beforeHeight = $element.find('div').prop('offsetHeight');
 	        isLoading = 1;
 	        $timeout(function () {
-	          scope.proxy.loadPrevious().then(function () {
+	          $scope.proxy.loadPrevious().then(function () {
 	            $timeout(function () {
-	              var afterHeight = element.find('div').prop('offsetHeight');
+	              var afterHeight = $element.find('div').prop('offsetHeight');
 	              setScrollPos(afterHeight - beforeHeight);
 	              isLoading = 0;
 	              deferred.resolve();
@@ -160,17 +165,69 @@ var RsInfiniteScroll =
 	      }
 
 	      function getContainerProps() {
-	        var containerHeight = element.prop('offsetHeight');
-	        var contentHeight = element.find('div').prop('offsetHeight');
-	        var scrollPos = element[0].scrollTop;
+	        var containerHeight = $element.prop('offsetHeight');
+	        var contentHeight = $element.find('div').prop('offsetHeight');
+	        var scrollPos = $element[0].scrollTop;
 	        return { containerHeight: containerHeight, contentHeight: contentHeight, scrollPos: scrollPos };
+	      }
+
+	      function getBoundingBox() {
+	        return $element[0].getBoundingClientRect();
 	      }
 
 	      function setScrollPos() {
 	        var scrollPos = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
 
-	        element[0].scrollTop = scrollPos;
+	        $element[0].scrollTop = scrollPos;
 	      }
+
+	      function updateChildren() {
+	        var _getBoundingBox = getBoundingBox();
+
+	        var top = _getBoundingBox.top;
+	        var bottom = _getBoundingBox.bottom;
+
+	        var containerTop = top;
+	        var containerBottom = bottom;
+	        for (var i = 0, l = children.length; i < l; i++) {
+	          var child = children[i];
+
+	          var _child$getBoundingBox = child.getBoundingBox();
+
+	          var _top = _child$getBoundingBox.top;
+	          var _bottom = _child$getBoundingBox.bottom;
+
+	          console.debug('containerTop', containerTop, 'containerBottom', containerBottom, 'top', _top, 'bottom', _bottom);
+	          child.setIsShown(_bottom >= containerTop && _bottom <= containerBottom || _top <= containerBottom && _top >= containerTop);
+	        }
+	      }
+
+	      // public controller
+	      this.addChild = function (scope) {
+	        children.push(scope);
+	      };
+	    }]
+	  };
+	}]);
+
+	/*@ngInject*/
+	rsInfiniteScroll.directive('rsInfiniteScrollItem', function () {
+	  return {
+	    require: '^rsInfiniteScroll',
+	    restrict: 'A',
+	    scope: {
+	      isShown: '='
+	    },
+	    link: function link(scope, element, attrs, scrollerCtrl) {
+	      scrollerCtrl.addChild(scope);
+
+	      scope.getBoundingBox = function () {
+	        return element[0].getBoundingClientRect();
+	      };
+
+	      scope.setIsShown = function (shown) {
+	        scope.isShown = shown;
+	      };
 	    }
 	  };
 	});

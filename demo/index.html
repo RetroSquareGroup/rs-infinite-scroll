@@ -9,13 +9,16 @@
         overflow: auto;
         background: #e1e1e1;
       }
+      .visible {
+        color: #F00;
+      }
     </style>
   </head>
   <body>
     <div ng-controller="RsDemoController as ctrl">
       <div class="scroller" rs-infinite-scroll proxy="ctrl.scrollProxy">
-        <div ng-repeat="dummy in ctrl.dummyList">
-          {{dummy}}
+        <div rs-infinite-scroll-item is-shown="dummy.viewState.visible" ng-repeat="dummy in ctrl.dummyList">
+          <span ng-class="{visible: dummy.viewState.visible}">{{dummy.index}}</span>
         </div>
       </div>
     </div>
