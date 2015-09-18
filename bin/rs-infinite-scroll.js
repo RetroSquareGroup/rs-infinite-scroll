@@ -197,8 +197,8 @@ var RsInfiniteScroll =
 	          var _top = _child$getBoundingBox.top;
 	          var _bottom = _child$getBoundingBox.bottom;
 
-	          console.debug('containerTop', containerTop, 'containerBottom', containerBottom, 'top', _top, 'bottom', _bottom);
-	          child.setIsShown(_bottom >= containerTop && _bottom <= containerBottom || _top <= containerBottom && _top >= containerTop);
+	          var isVisible = _bottom >= containerTop && _bottom <= containerBottom || _top <= containerBottom && _top >= containerTop;
+	          child.setIsVisible(isVisible);
 	        }
 	      }
 
@@ -216,7 +216,7 @@ var RsInfiniteScroll =
 	    require: '^rsInfiniteScroll',
 	    restrict: 'A',
 	    scope: {
-	      isShown: '='
+	      isVisible: '='
 	    },
 	    link: function link(scope, element, attrs, scrollerCtrl) {
 	      scrollerCtrl.addChild(scope);
@@ -225,8 +225,8 @@ var RsInfiniteScroll =
 	        return element[0].getBoundingClientRect();
 	      };
 
-	      scope.setIsShown = function (shown) {
-	        scope.isShown = shown;
+	      scope.setIsVisible = function (visible) {
+	        scope.isVisible = visible;
 	      };
 	    }
 	  };

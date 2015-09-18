@@ -17,7 +17,7 @@
   <body>
     <div ng-controller="RsDemoController as ctrl">
       <div class="scroller" rs-infinite-scroll proxy="ctrl.scrollProxy">
-        <div rs-infinite-scroll-item is-shown="dummy.viewState.visible" ng-repeat="dummy in ctrl.dummyList">
+        <div rs-infinite-scroll-item is-visible="dummy.viewState.visible" ng-repeat="dummy in ctrl.dummyList">
           <span ng-class="{visible: dummy.viewState.visible}">{{dummy.index}}</span>
         </div>
       </div>

@@ -119,8 +119,8 @@ rsInfiniteScroll.directive('rsInfiniteScroll', function($q, $timeout) {
         for (let i = 0, l = children.length; i < l; i++) {
           let child = children[i];
           let {top, bottom} = child.getBoundingBox();
-          console.debug('containerTop', containerTop, 'containerBottom', containerBottom, 'top', top, 'bottom', bottom);
-          child.setIsShown(((bottom >= containerTop && bottom <= containerBottom) || (top <= containerBottom && top >= containerTop)));
+          let isVisible = ((bottom >= containerTop && bottom <= containerBottom) || (top <= containerBottom && top >= containerTop));
+          child.setIsVisible(isVisible);
         }
       }
 
@@ -138,7 +138,7 @@ rsInfiniteScroll.directive('rsInfiniteScrollItem', function() {
     require: '^rsInfiniteScroll',
     restrict: 'A',
     scope: {
-      isShown: '='
+      isVisible: '='
     },
     link: (scope, element, attrs, scrollerCtrl) => {
       scrollerCtrl.addChild(scope);
@@ -147,8 +147,8 @@ rsInfiniteScroll.directive('rsInfiniteScrollItem', function() {
         return element[0].getBoundingClientRect();
       };
 
-      scope.setIsShown = (shown) => {
-        scope.isShown = shown;
+      scope.setIsVisible = (visible) => {
+        scope.isVisible = visible;
       };
     }
   };
