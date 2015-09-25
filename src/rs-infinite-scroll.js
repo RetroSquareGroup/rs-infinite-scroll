@@ -16,7 +16,8 @@ rsInfiniteScroll.directive('rsInfiniteScroll', function($q, $timeout) {
       proxy: '='
     },
     controller: function($scope, $element) {
-      var lastScroll = 0;
+      var isScrolling = false;
+      var lastScroll = -1;
       var isLoading = 0;
       var children = [];
       var scrollTimeout;
@@ -33,12 +34,19 @@ rsInfiniteScroll.directive('rsInfiniteScroll', function($q, $timeout) {
         let {containerHeight, contentHeight} = getContainerProps();
 
         $element.on('scroll', () => {
+          let initialized = (lastScroll > -1);
+
+          if (initialized && !isScrolling) {
+            isScrolling = true;
+            handleOnScrollStart();
+          }
           $timeout.cancel(scrollTimeout);
 
           // handle scroll events to update content
           let {containerHeight, contentHeight, scrollPos} = getContainerProps();
           let direction = (scrollPos > lastScroll) ? FORWARD : BACKWARD;
 
+          // TODO allow for sensitivity to be declared
           if (direction === FORWARD) {
             if (scrollPos >= 0.9*(contentHeight-containerHeight)) {
               if (isLoading == 0) applyLoadFollowing();
@@ -52,7 +60,13 @@ rsInfiniteScroll.directive('rsInfiniteScroll', function($q, $timeout) {
 
           lastScroll = scrollPos;
 
-          scrollTimeout = $timeout(updateChildren, 300);
+          scrollTimeout = $timeout(() => {
+            updateChildren();
+            if (isScrolling) {
+              handleOnScrollEnd();
+              isScrolling = false;
+            }
+          }, 300);
         });
 
         if (containerHeight > contentHeight) {
@@ -97,6 +111,42 @@ rsInfiniteScroll.directive('rsInfiniteScroll', function($q, $timeout) {
         return deferred.promise;
       }
 
+      function handleOnScrollStart() {
+        if (!$scope.proxy.onScrollStartHandler) return;
+
+        let {scrollPos} = getContainerProps();
+        let currentlyShowing = [];
+        for (let i = 0, l = children.length; i < l; i++) {
+          let child = children[i];
+          if (child.isVisible) {
+            currentlyShowing.push(child);
+          }
+        }
+
+        $scope.proxy.onScrollStartHandler({
+          scrollPosition: scrollPos,
+          childrenShowing: currentlyShowing
+        });
+      }
+
+      function handleOnScrollEnd() {
+        if (!$scope.proxy.onScrollEndHandler) return;
+
+        let {scrollPos} = getContainerProps();
+        let nowShowing = [];
+        for (let i = 0, l = children.length; i < l; i++) {
+          let child = children[i];
+          if (child.isVisible) {
+            nowShowing.push(child);
+          }
+        }
+
+        $scope.proxy.onScrollEndHandler({
+          scrollPosition: scrollPos,
+          childrenShowing: nowShowing
+        });
+      }
+
       function getContainerProps() {
         let containerHeight = $element.prop('offsetHeight');
         let contentHeight = $element.find('div').prop('offsetHeight');
@@ -120,13 +170,19 @@ rsInfiniteScroll.directive('rsInfiniteScroll', function($q, $timeout) {
           let child = children[i];
           let {top, bottom} = child.getBoundingBox();
           let isVisible = ((bottom >= containerTop && bottom <= containerBottom) || (top <= containerBottom && top >= containerTop));
-          child.setIsVisible(isVisible);
+          child.isVisible = isVisible;
         }
       }
 
       // public controller
       this.addChild = (scope) => {
+        let {containerHeight, contentHeight, scrollPos} = getContainerProps();
+
         children.push(scope);
+
+        if (contentHeight > containerHeight && scrollPos === 0) {
+          setScrollPos(1);
+        }
       };
     }
   };
@@ -138,17 +194,14 @@ rsInfiniteScroll.directive('rsInfiniteScrollItem', function() {
     require: '^rsInfiniteScroll',
     restrict: 'A',
     scope: {
-      isVisible: '='
+      isVisible: '=',
+      itemData: '='
     },
     link: (scope, element, attrs, scrollerCtrl) => {
       scrollerCtrl.addChild(scope);
 
       scope.getBoundingBox = () => {
         return element[0].getBoundingClientRect();
-      };
-
-      scope.setIsVisible = (visible) => {
-        scope.isVisible = visible;
       };
     }
   };

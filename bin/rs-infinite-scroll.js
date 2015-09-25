@@ -73,7 +73,8 @@ var RsInfiniteScroll =
 	      proxy: '='
 	    },
 	    controller: ["$scope", "$element", function controller($scope, $element) {
-	      var lastScroll = 0;
+	      var isScrolling = false;
+	      var lastScroll = -1;
 	      var isLoading = 0;
 	      var children = [];
 	      var scrollTimeout;
@@ -94,6 +95,12 @@ var RsInfiniteScroll =
 	        var contentHeight = _getContainerProps.contentHeight;
 
 	        $element.on('scroll', function () {
+	          var initialized = lastScroll > -1;
+
+	          if (initialized && !isScrolling) {
+	            isScrolling = true;
+	            handleOnScrollStart();
+	          }
 	          $timeout.cancel(scrollTimeout);
 
 	          // handle scroll events to update content
@@ -106,6 +113,7 @@ var RsInfiniteScroll =
 
 	          var direction = scrollPos > lastScroll ? FORWARD : BACKWARD;
 
+	          // TODO allow for sensitivity to be declared
 	          if (direction === FORWARD) {
 	            if (scrollPos >= 0.9 * (contentHeight - containerHeight)) {
 	              if (isLoading == 0) applyLoadFollowing();
@@ -119,7 +127,13 @@ var RsInfiniteScroll =
 
 	          lastScroll = scrollPos;
 
-	          scrollTimeout = $timeout(updateChildren, 300);
+	          scrollTimeout = $timeout(function () {
+	            updateChildren();
+	            if (isScrolling) {
+	              handleOnScrollEnd();
+	              isScrolling = false;
+	            }
+	          }, 300);
 	        });
 
 	        if (containerHeight > contentHeight) {
@@ -164,6 +178,48 @@ var RsInfiniteScroll =
 	        return deferred.promise;
 	      }
 
+	      function handleOnScrollStart() {
+	        if (!$scope.proxy.onScrollStartHandler) return;
+
+	        var _getContainerProps3 = getContainerProps();
+
+	        var scrollPos = _getContainerProps3.scrollPos;
+
+	        var currentlyShowing = [];
+	        for (var i = 0, l = children.length; i < l; i++) {
+	          var child = children[i];
+	          if (child.isVisible) {
+	            currentlyShowing.push(child);
+	          }
+	        }
+
+	        $scope.proxy.onScrollStartHandler({
+	          scrollPosition: scrollPos,
+	          childrenShowing: currentlyShowing
+	        });
+	      }
+
+	      function handleOnScrollEnd() {
+	        if (!$scope.proxy.onScrollEndHandler) return;
+
+	        var _getContainerProps4 = getContainerProps();
+
+	        var scrollPos = _getContainerProps4.scrollPos;
+
+	        var nowShowing = [];
+	        for (var i = 0, l = children.length; i < l; i++) {
+	          var child = children[i];
+	          if (child.isVisible) {
+	            nowShowing.push(child);
+	          }
+	        }
+
+	        $scope.proxy.onScrollEndHandler({
+	          scrollPosition: scrollPos,
+	          childrenShowing: nowShowing
+	        });
+	      }
+
 	      function getContainerProps() {
 	        var containerHeight = $element.prop('offsetHeight');
 	        var contentHeight = $element.find('div').prop('offsetHeight');
@@ -198,13 +254,23 @@ var RsInfiniteScroll =
 	          var _bottom = _child$getBoundingBox.bottom;
 
 	          var isVisible = _bottom >= containerTop && _bottom <= containerBottom || _top <= containerBottom && _top >= containerTop;
-	          child.setIsVisible(isVisible);
+	          child.isVisible = isVisible;
 	        }
 	      }
 
 	      // public controller
 	      this.addChild = function (scope) {
+	        var _getContainerProps5 = getContainerProps();
+
+	        var containerHeight = _getContainerProps5.containerHeight;
+	        var contentHeight = _getContainerProps5.contentHeight;
+	        var scrollPos = _getContainerProps5.scrollPos;
+
 	        children.push(scope);
+
+	        if (contentHeight > containerHeight && scrollPos === 0) {
+	          setScrollPos(1);
+	        }
 	      };
 	    }]
 	  };
@@ -216,17 +282,14 @@ var RsInfiniteScroll =
 	    require: '^rsInfiniteScroll',
 	    restrict: 'A',
 	    scope: {
-	      isVisible: '='
+	      isVisible: '=',
+	      itemData: '='
 	    },
 	    link: function link(scope, element, attrs, scrollerCtrl) {
 	      scrollerCtrl.addChild(scope);
 
 	      scope.getBoundingBox = function () {
 	        return element[0].getBoundingClientRect();
-	      };
-
-	      scope.setIsVisible = function (visible) {
-	        scope.isVisible = visible;
 	      };
 	    }
 	  };
