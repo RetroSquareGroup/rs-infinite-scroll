@@ -143,6 +143,8 @@ var RsInfiniteScroll =
 	            });
 	          });
 	        }
+
+	        updateChildren();
 	      }
 
 	      function applyLoadFollowing() {

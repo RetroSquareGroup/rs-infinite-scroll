@@ -76,6 +76,8 @@ rsInfiniteScroll.directive('rsInfiniteScroll', function($q, $timeout) {
             });
           });
         }
+
+        updateChildren();
       }
 
       function applyLoadFollowing() {
