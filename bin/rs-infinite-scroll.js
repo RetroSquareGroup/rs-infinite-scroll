@@ -85,14 +85,29 @@ var RsInfiniteScroll =
 	        $element.off('scroll');
 	      });
 
+	      $scope.$watch(function () {
+	        return $element[0].innerHTML.length;
+	      }, function (newValue, oldValue) {
+	        if (newValue !== oldValue) {
+	          var _getContainerProps = getContainerProps();
+
+	          var containerHeight = _getContainerProps.containerHeight;
+	          var contentHeight = _getContainerProps.contentHeight;
+
+	          if (containerHeight >= contentHeight) {
+	            updateChildren();
+	          }
+	        }
+	      });
+
 	      function initPaginator() {
 	        var FORWARD = 1;
 	        var BACKWARD = -1;
 
-	        var _getContainerProps = getContainerProps();
+	        var _getContainerProps2 = getContainerProps();
 
-	        var containerHeight = _getContainerProps.containerHeight;
-	        var contentHeight = _getContainerProps.contentHeight;
+	        var containerHeight = _getContainerProps2.containerHeight;
+	        var contentHeight = _getContainerProps2.contentHeight;
 
 	        $element.on('scroll', function () {
 	          var initialized = lastScroll > -1;
@@ -105,11 +120,11 @@ var RsInfiniteScroll =
 
 	          // handle scroll events to update content
 
-	          var _getContainerProps2 = getContainerProps();
+	          var _getContainerProps3 = getContainerProps();
 
-	          var containerHeight = _getContainerProps2.containerHeight;
-	          var contentHeight = _getContainerProps2.contentHeight;
-	          var scrollPos = _getContainerProps2.scrollPos;
+	          var containerHeight = _getContainerProps3.containerHeight;
+	          var contentHeight = _getContainerProps3.contentHeight;
+	          var scrollPos = _getContainerProps3.scrollPos;
 
 	          var direction = scrollPos > lastScroll ? FORWARD : BACKWARD;
 
@@ -140,11 +155,10 @@ var RsInfiniteScroll =
 	          applyLoadFollowing().then(function () {
 	            $timeout(function () {
 	              setScrollPos(1);
+	              updateChildren();
 	            });
 	          });
 	        }
-
-	        updateChildren();
 	      }
 
 	      function applyLoadFollowing() {
@@ -183,9 +197,9 @@ var RsInfiniteScroll =
 	      function handleOnScrollStart() {
 	        if (!$scope.proxy.onScrollStartHandler) return;
 
-	        var _getContainerProps3 = getContainerProps();
+	        var _getContainerProps4 = getContainerProps();
 
-	        var scrollPos = _getContainerProps3.scrollPos;
+	        var scrollPos = _getContainerProps4.scrollPos;
 
 	        var currentlyShowing = [];
 	        for (var i = 0, l = children.length; i < l; i++) {
@@ -204,9 +218,9 @@ var RsInfiniteScroll =
 	      function handleOnScrollEnd() {
 	        if (!$scope.proxy.onScrollEndHandler) return;
 
-	        var _getContainerProps4 = getContainerProps();
+	        var _getContainerProps5 = getContainerProps();
 
-	        var scrollPos = _getContainerProps4.scrollPos;
+	        var scrollPos = _getContainerProps5.scrollPos;
 
 	        var nowShowing = [];
 	        for (var i = 0, l = children.length; i < l; i++) {
@@ -262,11 +276,11 @@ var RsInfiniteScroll =
 
 	      // public controller
 	      this.addChild = function (scope) {
-	        var _getContainerProps5 = getContainerProps();
+	        var _getContainerProps6 = getContainerProps();
 
-	        var containerHeight = _getContainerProps5.containerHeight;
-	        var contentHeight = _getContainerProps5.contentHeight;
-	        var scrollPos = _getContainerProps5.scrollPos;
+	        var containerHeight = _getContainerProps6.containerHeight;
+	        var contentHeight = _getContainerProps6.contentHeight;
+	        var scrollPos = _getContainerProps6.scrollPos;
 
 	        children.push(scope);
 

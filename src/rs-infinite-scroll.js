@@ -28,6 +28,18 @@ rsInfiniteScroll.directive('rsInfiniteScroll', function($q, $timeout) {
         $element.off('scroll');
       });
 
+      $scope.$watch(
+        () => ($element[0].innerHTML.length),
+        (newValue, oldValue) => {
+          if (newValue !== oldValue) {
+            let {containerHeight, contentHeight} = getContainerProps();
+            if (containerHeight >= contentHeight) {
+              updateChildren();
+            }
+          }
+        }
+      );
+
       function initPaginator() {
         const FORWARD  = 1;
         const BACKWARD = -1;
@@ -73,11 +85,10 @@ rsInfiniteScroll.directive('rsInfiniteScroll', function($q, $timeout) {
           applyLoadFollowing().then(() => {
             $timeout(() => {
               setScrollPos(1);
+              updateChildren();
             });
           });
         }
-
-        updateChildren();
       }
 
       function applyLoadFollowing() {

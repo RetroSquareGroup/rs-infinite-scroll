@@ -12,18 +12,21 @@ angular.module('rsInfiniteScrollDemo', [require('rs-infinite-scroll')])
     ctrl.dummyList = [];
 
     let init = function() {
-      ctrl.dummyList = [
-        {index: 1},
-        {index: 2},
-        {index: 3},
-        {index: 4},
-        {index: 5},
-        {index: 6},
-        {index: 7},
-        {index: 8},
-        {index: 9},
-        {index: 10}
-      ];
+      $timeout(function() {
+        ctrl.dummyList = [
+          {index: 1},
+          {index: 2},
+          {index: 3},
+          {index: 4},
+          {index: 5},
+          {index: 6},
+          {index: 7},
+          {index: 8},
+          {index: 9},
+          {index: 10}
+        ];
+        loadFollowing();
+      }, 5000);
     };
     init();
 
@@ -34,11 +37,17 @@ angular.module('rsInfiniteScrollDemo', [require('rs-infinite-scroll')])
 
     function loadFollowing() {
       let last = ctrl.dummyList[ctrl.dummyList.length-1]; // should be safe after initialization
+      if (!last) {
+        var deferred = $q.defer();
+        deferred.resolve();
+        return deferred.promise;
+      }
       return addAfter(last);
     }
 
     function addAfter(last) {
       var deferred = $q.defer();
+      deferred.resolve();
       $timeout(() => {
         if (last.index > 1000) {
           deferred.resolve();
@@ -54,6 +63,7 @@ angular.module('rsInfiniteScrollDemo', [require('rs-infinite-scroll')])
 
     function addBefore(first) {
       var deferred = $q.defer();
+      deferred.resolve();
       $timeout(() => {
         if (first.index < -1000) {
           deferred.resolve();
