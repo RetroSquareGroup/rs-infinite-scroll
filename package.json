@@ -1,6 +1,6 @@
 {
   "name": "rs-infinite-scroll",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "An attempt at doing infinite scroll correctly for AngularJS",
   "main": "src/rs-infinite-scroll.js",
   "scripts": {
