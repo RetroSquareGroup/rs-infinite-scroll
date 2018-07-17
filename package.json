@@ -19,7 +19,7 @@
     "javascript"
   ],
   "author": "E Brent Nelson <ebrentnelson@gmail.com>",
-  "license": "GNU GENERAL PUBLIC LICENSE",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/RetroSquareGroup/rs-infinite-scroll/issues"
   },
