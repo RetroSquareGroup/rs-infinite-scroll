@@ -1,6 +1,6 @@
 var angular = require('angular');
 
-angular.module('rsInfiniteScrollDemo', [require('rs-infinite-scroll')])
+angular.module('rsInfiniteScrollDemo', [require('rs-infinite-scroll').default])
   /*@ngInject*/
   .controller('RsDemoController', ['$q', '$timeout', function($q, $timeout) {
     var ctrl = this;
