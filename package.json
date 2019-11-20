@@ -24,7 +24,7 @@
     "url": "https://github.com/RetroSquareGroup/rs-infinite-scroll/issues"
   },
   "devDependencies": {
-    "angular": "1.7.2",
+    "angular": "1.7.9",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.6",
